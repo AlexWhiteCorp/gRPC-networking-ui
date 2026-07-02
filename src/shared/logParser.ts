@@ -136,16 +136,16 @@ export function parseLogLine(line: string): ParsedEntry | null {
 }
 
 /**
- * Parse a payload that may be JSON, JSON5 (single quotes), or a Python dict repr.
- * Tries JSON5 first, then retries after converting Python literals
- * (True/False/None) that sit outside string values. Falls back to the raw string
- * if it still can't be parsed (e.g. the logger truncated it).
+ * Parse a payload that may be JSON, JSON5 (single quotes), or a Python dict/repr.
+ * Tries JSON5 first, then retries after normalizing Python-isms that sit outside
+ * string values: True/False/None literals and string/bytes prefixes (b'…', r'…').
+ * Falls back to the raw string if it still can't be parsed (e.g. truncated).
  */
 function parsePayload(text: string): unknown {
   try {
     return JSON5.parse(text);
   } catch {
-    // fall through to the Python-literal retry
+    // fall through to the Python-normalized retry
   }
   try {
     return JSON5.parse(normalizePythonLiterals(text));
@@ -154,14 +154,18 @@ function parsePayload(text: string): unknown {
   }
 }
 
-/** Replace bare Python literals with their JSON equivalents, but only when they
- *  appear outside of quoted strings so string contents are never altered. */
+const PYTHON_LITERALS: Record<string, string> = {
+  True: 'true',
+  False: 'false',
+  None: 'null',
+};
+// Python string/bytes/raw prefixes (b'…', r'…', rb'…', …) — dropped so the
+// literal becomes a plain string that JSON5 can parse.
+const STRING_PREFIX = /^(?:b|r|u|rb|br|ru|ur)$/i;
+
+/** Normalize Python-isms that only appear outside quoted strings, so string
+ *  contents are never altered. Handles True/False/None and string/bytes prefixes. */
 function normalizePythonLiterals(text: string): string {
-  const REPLACEMENTS: Record<string, string> = {
-    True: 'true',
-    False: 'false',
-    None: 'null',
-  };
   let out = '';
   let quote: string | null = null;
   for (let i = 0; i < text.length; i++) {
@@ -184,7 +188,16 @@ function normalizePythonLiterals(text: string): string {
       let j = i + 1;
       while (j < text.length && /[A-Za-z0-9_]/.test(text[j])) j++;
       const word = text.slice(i, j);
-      out += REPLACEMENTS[word] ?? word;
+      // A string/bytes prefix directly before a quote (ignoring any gap) → drop it.
+      if (STRING_PREFIX.test(word)) {
+        let k = j;
+        while (k < text.length && /\s/.test(text[k])) k++;
+        if (text[k] === "'" || text[k] === '"') {
+          i = k - 1; // skip the prefix and any whitespace; keep the string
+          continue;
+        }
+      }
+      out += PYTHON_LITERALS[word] ?? word;
       i = j - 1;
       continue;
     }
