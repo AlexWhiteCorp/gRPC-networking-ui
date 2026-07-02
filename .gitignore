@@ -1,0 +1,24 @@
+node_modules/
+dist/
+out/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# Env
+.env
+.env.local
+
+# IDE (keep .idea module config, ignore workspace state)
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.tmp/
+temp/
+tmp/
