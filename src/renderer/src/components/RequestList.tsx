@@ -1,6 +1,6 @@
 import type { GrpcCall } from '@/types';
 import { formatBytes, formatClockTime, formatDuration, isErrorStatus } from '@/format';
-import { StatusBadge, TypeBadge } from './badges';
+import { OutcomeBadge, StatusBadge, TypeBadge } from './badges';
 
 interface RequestListProps {
   calls: GrpcCall[];
@@ -26,6 +26,7 @@ export function RequestList({ calls, selectedId, onSelect }: RequestListProps): 
             <th className="col-method">Method</th>
             <th className="col-type">Type</th>
             <th className="col-status">Status</th>
+            <th className="col-result">Result</th>
             <th className="col-num">Size</th>
             <th className="col-num">Time</th>
             <th className="col-num">Duration</th>
@@ -37,7 +38,9 @@ export function RequestList({ calls, selectedId, onSelect }: RequestListProps): 
               key={call.id}
               className={
                 (selectedId === call.id ? 'row-selected ' : '') +
-                (isErrorStatus(call.status) ? 'row-error' : '')
+                (isErrorStatus(call.status) || call.outcome === 'failure'
+                  ? 'row-error'
+                  : '')
               }
               onClick={() => onSelect(call.id)}
             >
@@ -50,6 +53,9 @@ export function RequestList({ calls, selectedId, onSelect }: RequestListProps): 
               </td>
               <td className="col-status">
                 <StatusBadge status={call.status} />
+              </td>
+              <td className="col-result">
+                <OutcomeBadge outcome={call.outcome} />
               </td>
               <td className="col-num">{formatBytes(call.sizeBytes)}</td>
               <td className="col-num">{formatClockTime(call.startTime)}</td>

@@ -225,7 +225,11 @@ body {
 
 .col-method {
   max-width: 0;
-  width: 40%;
+  width: 36%;
+}
+
+.col-result {
+  white-space: nowrap;
 }
 
 .col-num {
@@ -283,6 +287,10 @@ body {
 .badge-type {
   color: var(--text-dim);
   border: 1px solid var(--border);
+}
+
+.badge-muted {
+  color: var(--text-faint);
 }
 
 .badge-icon {
@@ -421,8 +429,15 @@ body {
 }
 
 /* ---- JSON view ---- */
+.json-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .json-view {
   margin: 0;
+  align-self: stretch;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -433,6 +448,20 @@ body {
   color: var(--text);
   overflow-x: auto;
   white-space: pre;
+}
+
+.json-toggle {
+  margin-top: 0.3rem;
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 0.1rem 0;
+}
+
+.json-toggle:hover {
+  text-decoration: underline;
 }
 
 /* ---- Messages ---- */

@@ -26,3 +26,19 @@ export function TypeBadge({ type }: { type: RpcType }): JSX.Element {
     </span>
   );
 }
+
+export function OutcomeBadge({
+  outcome,
+}: {
+  outcome?: 'success' | 'failure';
+}): JSX.Element {
+  if (!outcome) {
+    return <span className="badge badge-muted" title="No response yet">—</span>;
+  }
+  const ok = outcome === 'success';
+  return (
+    <span className={`badge badge-${ok ? 'ok' : 'error'}`}>
+      {ok ? '✓ Success' : '✗ Failure'}
+    </span>
+  );
+}

@@ -2,22 +2,24 @@
 [2026-07-02 10:15:01.220] [DEBUG] [UI] Rendered dashboard view
 [2026-07-02 10:15:02.000] [INFO] [Auth] [OUT] Heartbeat {'seq':1}
 [2026-07-02 10:15:03.101] [INFO] [Net] [OUT] GetAccountInfoRequest {'accountId':'acc_1001'}
-[2026-07-02 10:15:03.140] [INFO] [Net] [IN] GetAccountInfoResponse {'accountId':'acc_1001','name':'Ada Lovelace','balance':42000}
+[2026-07-02 10:15:03.140] [INFO] [Net] [IN] GetAccountInfoResponse {'success':{'accountId':'acc_1001','name':'Ada Lovelace','balance':42000}}
+[2026-07-02 10:15:03.300] [INFO] [Net] [OUT] DeleteRoomRequest {'roomId':'r_404'}
+[2026-07-02 10:15:03.360] [INFO] [Net] [IN] DeleteRoomResponse {'failure':{'code':'NOT_FOUND','message':'room r_404 does not exist'}}
 [2026-07-02 10:15:04.201] [INFO] [Net] [OUT] GetProductByIdRequest {'productId':101}
 [2026-07-02 10:15:04.205] [INFO] [Net] [OUT] GetProductByIdRequest {'productId':102}
-[2026-07-02 10:15:04.260] [INFO] [Net] [IN] GetProductByIdResponse {'productId':101,'name':'Widget','price':9.99}
+[2026-07-02 10:15:04.260] [INFO] [Net] [IN] GetProductByIdResponse {'success':{'productId':101,'name':'Widget','price':9.99}}
 [2026-07-02 10:15:04.320] [INFO] [Net] [OUT] GetProductByIdRequest {'productId':103}
-[2026-07-02 10:15:04.360] [INFO] [Net] [IN] GetProductByIdResponse {'productId':102,'name':'Gadget','price':19.99}
-[2026-07-02 10:15:04.420] [INFO] [Net] [IN] GetProductByIdResponse {'productId':103,'name':'Gizmo','price':4.5}
+[2026-07-02 10:15:04.360] [INFO] [Net] [IN] GetProductByIdResponse {'success':{'productId':102,'name':'Gadget','price':19.99}}
+[2026-07-02 10:15:04.420] [INFO] [Net] [IN] GetProductByIdResponse {'failure':{'code':'NOT_FOUND','message':'product 103 not found'}}
 [2026-07-02 10:15:04.500] [WARN] [Cache] eviction ran, freed 12MB
 [2026-07-02 10:15:05.010] [INFO] [Net] [OUT] MarketDataStreamRequest {'symbols':['ACME','GLOB']}
-[2026-07-02 10:15:05.120] [INFO] [Net] [IN] MarketDataStreamResponse {'symbol':'ACME','price':128.4}
-[2026-07-02 10:15:05.360] [INFO] [Net] [IN] MarketDataStreamResponse {'symbol':'GLOB','price':98.1}
-[2026-07-02 10:15:05.640] [INFO] [Net] [IN] MarketDataStreamResponse {'symbol':'ACME','price':128.7}
-[2026-07-02 10:15:06.000] [INFO] [Net] [IN] LegacyPingResponse {'ok':true}
+[2026-07-02 10:15:05.120] [INFO] [Net] [IN] MarketDataStreamResponse {'success':{'symbol':'ACME','price':128.4}}
+[2026-07-02 10:15:05.360] [INFO] [Net] [IN] MarketDataStreamResponse {'success':{'symbol':'GLOB','price':98.1}}
+[2026-07-02 10:15:05.640] [INFO] [Net] [IN] MarketDataStreamResponse {'success':{'symbol':'ACME','price':128.7}}
+[2026-07-02 10:15:06.000] [INFO] [Net] [IN] LegacyPingResponse {'success':{'ok':true}}
 [2026-07-02 10:15:06.500] [INFO] [Net] [OUT] UpdateCartRequest {'cartId':'c_9','items':3}
-[2026-07-02 10:15:06.560] [INFO] [Net] [IN] UpdateCartResponse {'cartId':'c_9','total':59.97,'note':'Ada\'s cart'}
+[2026-07-02 10:15:06.560] [INFO] [Net] [IN] UpdateCartResponse {'success':{'cartId':'c_9','total':59.97,'note':'Ada\'s cart'}}
 [2026-07-02 10:15:07.000] [INFO] [Net] [OUT] GetRecommendationsRequest {'userId':'u_5'}
 [2026-07-02 10:15:07.400] [INFO] [Net] [OUT] StreamSpacesPageRequest {'spaceId':'space_12'}
-[2026-07-02 10:15:07.520] [INFO] [Net] [IN] StreamSpacesPageUpdatesResponse {'spaceId':'space_12','revision':1}
-[2026-07-02 10:15:07.900] [INFO] [Net] [IN] StreamSpacesPageUpdatesResponse {'spaceId':'space_12','revision':2}
+[2026-07-02 10:15:07.520] [INFO] [Net] [IN] StreamSpacesPageUpdatesResponse {'success':{'spaceId':'space_12','revision':1}}
+[2026-07-02 10:15:07.900] [INFO] [Net] [IN] StreamSpacesPageUpdatesResponse {'success':{'spaceId':'space_12','revision':2}}

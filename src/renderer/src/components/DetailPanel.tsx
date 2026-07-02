@@ -8,7 +8,7 @@ import {
   isErrorStatus,
   statusCode,
 } from '@/format';
-import { StatusBadge } from './badges';
+import { OutcomeBadge, StatusBadge } from './badges';
 import { JsonView } from './JsonView';
 
 type Tab = 'metadata' | 'messages' | 'timing' | 'status';
@@ -40,6 +40,7 @@ export function DetailPanel({ call }: { call: GrpcCall | null }): JSX.Element {
         </div>
         <div className="detail-subtitle">
           <StatusBadge status={call.status} />
+          {call.outcome && <OutcomeBadge outcome={call.outcome} />}
           {call.pending && <span className="pending-pill">pending…</span>}
           <span className="detail-meta">{RPC_TYPE_LABEL[call.type]}</span>
           {call.authority && <span className="detail-meta">{call.authority}</span>}
@@ -123,7 +124,7 @@ function MessagesTab({ messages }: { messages: GrpcMessage[] }): JSX.Element {
             {msg.name && <span className="message-name">{msg.name}</span>}
             <span className="message-offset">+{msg.offsetMs} ms</span>
           </div>
-          <JsonView value={msg.payload} />
+          <JsonView value={msg.payload} collapsible />
         </section>
       ))}
     </div>

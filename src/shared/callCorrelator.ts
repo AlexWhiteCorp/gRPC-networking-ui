@@ -112,6 +112,7 @@ export class CallCorrelator {
         trailers: {},
         messages: [makeMessage(entry, 0)],
         sizeBytes: entry.payloadBytes,
+        outcome: outcomeFromPayload(entry.payload),
       };
       this.calls.set(id, call);
       this.order.push(id);
@@ -122,6 +123,7 @@ export class CallCorrelator {
     call.messages.push(makeMessage(entry, time - call.startTime));
     call.sizeBytes += entry.payloadBytes;
     call.durationMs = Math.max(0, time - call.startTime);
+    applyOutcome(call, entry.payload);
 
     if (call.type === 'unary') {
       // Unary is done after its single response.
@@ -144,6 +146,25 @@ export class CallCorrelator {
     this.lastTime = Math.max(this.lastTime, time);
     return time;
   }
+}
+
+/** Derive success/failure from a response payload's top-level key. gRPC-style
+ *  responses wrap their body in a oneof, e.g. { success: {...} } / { failure: {...} }. */
+function outcomeFromPayload(payload: unknown): 'success' | 'failure' | undefined {
+  if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+    const keys = Object.keys(payload);
+    if (keys.includes('failure') || keys.includes('error')) return 'failure';
+    if (keys.includes('success')) return 'success';
+  }
+  return undefined;
+}
+
+/** Update a call's outcome from a new response. A failure sticks (so a stream
+ *  that fails once stays failed); otherwise the latest known outcome wins. */
+function applyOutcome(call: GrpcCall, payload: unknown): void {
+  if (call.outcome === 'failure') return;
+  const outcome = outcomeFromPayload(payload);
+  if (outcome) call.outcome = outcome;
 }
 
 function makeMessage(entry: ParsedEntry, offsetMs: number): GrpcMessage {

@@ -63,6 +63,9 @@ export interface GrpcCall {
   statusMessage?: string;
   /** Request seen, but no response yet (relevant while live-tailing). */
   pending?: boolean;
+  /** Business outcome derived from the response payload's top-level
+   *  success/failure key. Undefined until a response arrives. */
+  outcome?: 'success' | 'failure';
   /** Epoch milliseconds when the call started. */
   startTime: number;
   durationMs: number;
