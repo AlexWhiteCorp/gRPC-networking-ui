@@ -3,6 +3,9 @@ dist/
 out/
 build/
 
+# TypeScript incremental build info (from composite typecheck)
+*.tsbuildinfo
+
 # Logs
 *.log
 npm-debug.log*

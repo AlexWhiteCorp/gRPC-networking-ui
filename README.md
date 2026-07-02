@@ -10,6 +10,17 @@ metadata, status, and timing.
 > bundled sample (`sample-logs/sample.txt`) loads on startup; use **Open log
 > file…** to tail any file. There is no direct gRPC capture yet.
 
+## Features
+
+- **Request list** — service/method, RPC type, status, **result** (success/failure),
+  size, time, duration. Text + RPC-type + status filters, and **Clear** (wipes the
+  list and keeps tailing, so only later lines appear).
+- **Detail panel** — Metadata, Messages, Timing, and Status tabs. Message payloads
+  render as an interactive **JSON tree** where every object/array collapses
+  independently.
+- **Live tail** — pick a file (or the sample); new appended lines show up within
+  ~100 ms.
+
 ## Requirements
 
 - Node.js 20+
@@ -39,7 +50,7 @@ sample-logs/    bundled sample log tailed on startup
 src/
 ├── shared/     framework-free model + log parsing (used by main and renderer)
 │   ├── models.ts          GrpcCall / GrpcMessage data model + LogSnapshot
-│   ├── logParser.ts       parse/derive service·method·type from a log line
+│   ├── logParser.ts       line regex, name→service/method/type, payload parsing
 │   └── callCorrelator.ts  FIFO grouping of lines into calls (stateful)
 ├── main/       Electron main process (lifecycle, windows, IPC, prod CSP)
 │   └── logSource.ts       read file + fs.watch live-tail + push snapshots
@@ -49,24 +60,37 @@ src/
     └── src/
         ├── main.tsx        React entry
         ├── App.tsx         subscribes to log snapshots + layout
+        ├── format.ts       display helpers (bytes, duration, status)
         ├── types.ts        re-exports the shared model
-        └── components/      Toolbar, RequestList, DetailPanel, ...
+        └── components/      Toolbar, RequestList, DetailPanel, JsonTree, badges
 ```
 
-### Log format
+### Log format & parsing
 
 Network lines look like:
 
 ```
-[<date time>]<ignored>[<IN|OUT>] <Name> <json payload>
+[<date time>]<ignored>[<IN|OUT>] <Name> <payload>
 ```
 
-Only lines whose `<Name>` ends in `Request`/`Response` are kept (others are
-noise). `OUT`=request, `IN`=response. A name containing `Stream` is
-server-streaming, otherwise unary. The service/method are derived by stripping
-`Stream` and the `Request`/`Response` suffix (`GetAccountInfoRequest` →
-method `GetAccountInfo`, service `GetAccountInfoService`). A request is paired
-with its following response(s) FIFO per name, so repeated calls stay separate.
+Handled in `src/shared/logParser.ts` and `callCorrelator.ts`:
+
+- **Filtering** — only lines whose `<Name>` ends in `Request`/`Response` are kept;
+  everything else is noise.
+- **Direction** — `OUT` = request, `IN` = response.
+- **Type** — a name containing `Stream` is server-streaming, otherwise unary.
+- **Service/method** — strip `Stream` and the `Request`/`Response` suffix
+  (`GetAccountInfoRequest` → method `GetAccountInfo`, service `GetAccountInfoService`).
+- **Correlation** — FIFO per name: each request opens a call; the next matching
+  response(s) complete the oldest open call for that name, so repeated calls stay
+  separate. Streams keep attaching responses until superseded.
+- **Overrides** — request/response names that don't share a base name are mapped
+  explicitly via `REQUEST_RESPONSE_OVERRIDES` in `logParser.ts`.
+- **Payloads** — parsed with JSON5 (single quotes ok); on failure, a string-aware
+  normalizer converts Python-repr `dict`s (`True`/`False`/`None`, `b'…'`/`r'…'`
+  prefixes) before a retry, falling back to the raw string if still unparseable.
+- **Outcome** — success/failure is derived from the response payload's top-level
+  key (`success` vs `failure`/`error`).
 
 Built with [`electron-vite`](https://electron-vite.org/). Output goes to `out/`.
 
