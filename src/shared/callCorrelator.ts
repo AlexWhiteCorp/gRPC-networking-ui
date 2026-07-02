@@ -4,11 +4,12 @@ import { parseLogLine, type ParsedEntry } from './logParser';
 /**
  * Turns a stream of log lines into correlated `GrpcCall`s.
  *
- * Grouping is FIFO per base name: each request opens a new call; the next
- * matching response(s) complete the oldest still-open call for that name. This
+ * Grouping is FIFO per correlation key: each request opens a new call; the next
+ * matching response(s) complete the oldest still-open call for that key. This
  * keeps repeated same-name calls (e.g. many `GetProductByIdRequest`) as separate
  * entries. A server-streaming call keeps attaching responses until the next
- * request of the same base name supersedes it.
+ * request with the same key supersedes it. The key comes from `deriveName`, so
+ * `REQUEST_RESPONSE_OVERRIDES` can group differently-named request/response pairs.
  *
  * The instance is stateful across `ingestLines` calls so it can be fed appended
  * lines while live-tailing a file. Call `reset()` when switching files.
@@ -16,8 +17,8 @@ import { parseLogLine, type ParsedEntry } from './logParser';
 export class CallCorrelator {
   private calls = new Map<string, GrpcCall>();
   private order: string[] = [];
-  /** Queue of open call ids awaiting/receiving responses, keyed by base name. */
-  private openByBase = new Map<string, string[]>();
+  /** Queue of open call ids awaiting/receiving responses, keyed by correlation key. */
+  private openByKey = new Map<string, string[]>();
   private counter = 0;
   /** Monotonic clock used when a log timestamp is missing/unparseable. */
   private lastTime = 0;
@@ -25,7 +26,7 @@ export class CallCorrelator {
   reset(): void {
     this.calls.clear();
     this.order = [];
-    this.openByBase.clear();
+    this.openByKey.clear();
     this.counter = 0;
     this.lastTime = 0;
   }
@@ -54,8 +55,8 @@ export class CallCorrelator {
   }
 
   private openRequest(entry: ParsedEntry, time: number): void {
-    // A new request supersedes any open server-stream of the same base name.
-    const open = this.openByBase.get(entry.baseName);
+    // A new request supersedes any open server-stream with the same key.
+    const open = this.openByKey.get(entry.correlationKey);
     if (open) {
       for (let i = open.length - 1; i >= 0; i--) {
         const call = this.calls.get(open[i])!;
@@ -85,11 +86,11 @@ export class CallCorrelator {
     };
     this.calls.set(id, call);
     this.order.push(id);
-    this.enqueue(entry.baseName, id);
+    this.enqueue(entry.correlationKey, id);
   }
 
   private completeWithResponse(entry: ParsedEntry, time: number): void {
-    const queue = this.openByBase.get(entry.baseName);
+    const queue = this.openByKey.get(entry.correlationKey);
     const openId = queue?.[0];
 
     if (!openId) {
@@ -130,10 +131,10 @@ export class CallCorrelator {
     // Server-streaming stays open (pending) to accept further responses.
   }
 
-  private enqueue(baseName: string, id: string): void {
-    const queue = this.openByBase.get(baseName);
+  private enqueue(key: string, id: string): void {
+    const queue = this.openByKey.get(key);
     if (queue) queue.push(id);
-    else this.openByBase.set(baseName, [id]);
+    else this.openByKey.set(key, [id]);
   }
 
   /** Use the log timestamp when valid; otherwise fall back to a monotonic clock

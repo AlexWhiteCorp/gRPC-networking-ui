@@ -18,3 +18,6 @@
 [2026-07-02 10:15:06.500] [INFO] [Net] [OUT] UpdateCartRequest {'cartId':'c_9','items':3}
 [2026-07-02 10:15:06.560] [INFO] [Net] [IN] UpdateCartResponse {'cartId':'c_9','total':59.97,'note':'Ada\'s cart'}
 [2026-07-02 10:15:07.000] [INFO] [Net] [OUT] GetRecommendationsRequest {'userId':'u_5'}
+[2026-07-02 10:15:07.400] [INFO] [Net] [OUT] StreamSpacesPageRequest {'spaceId':'space_12'}
+[2026-07-02 10:15:07.520] [INFO] [Net] [IN] StreamSpacesPageUpdatesResponse {'spaceId':'space_12','revision':1}
+[2026-07-02 10:15:07.900] [INFO] [Net] [IN] StreamSpacesPageUpdatesResponse {'spaceId':'space_12','revision':2}

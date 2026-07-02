@@ -18,11 +18,22 @@ export class LogSource {
   private sourceLabel = '';
   private offset = 0;
   private partial = '';
-  private reading = false;
-  private rereadQueued = false;
   private debounceTimer: NodeJS.Timeout | null = null;
+  private opChain: Promise<unknown> = Promise.resolve();
 
   constructor(private readonly send: (snapshot: LogSnapshot) => void) {}
+
+  /** Serialize load/read operations so overlapping calls can't interleave and
+   *  ingest the file twice — e.g. a watcher read arriving during a reload, or
+   *  React StrictMode double-invoking the initial sample load in dev. */
+  private runExclusive<T>(op: () => Promise<T>): Promise<T> {
+    const result = this.opChain.then(op, op);
+    this.opChain = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
+  }
 
   /** Show a native picker and load the chosen .txt. Returns the path or null. */
   async openDialog(window: BrowserWindow | null): Promise<string | null> {
@@ -57,17 +68,19 @@ export class LogSource {
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
   }
 
-  private async loadFile(path: string, label: string): Promise<void> {
-    this.stopWatching();
-    this.correlator.reset();
-    this.offset = 0;
-    this.partial = '';
-    this.currentPath = path;
-    this.sourceLabel = label;
+  private loadFile(path: string, label: string): Promise<void> {
+    return this.runExclusive(async () => {
+      this.stopWatching();
+      this.correlator.reset();
+      this.offset = 0;
+      this.partial = '';
+      this.currentPath = path;
+      this.sourceLabel = label;
 
-    await this.readAppended();
-    this.pushSnapshot(true);
-    this.startWatching(path);
+      await this.readAppended();
+      this.pushSnapshot(true);
+      this.startWatching(path);
+    });
   }
 
   private startWatching(path: string): void {
@@ -84,23 +97,12 @@ export class LogSource {
     this.watcher = null;
   }
 
-  private async onChange(): Promise<void> {
-    // Coalesce bursts of fs events into sequential reads.
-    if (this.reading) {
-      this.rereadQueued = true;
-      return;
-    }
-    this.reading = true;
-    try {
+  private onChange(): void {
+    // Serialized with loads and other reads; the debounce coalesces the pushes.
+    void this.runExclusive(async () => {
       const changed = await this.readAppended();
       if (changed) this.scheduleSnapshot();
-    } finally {
-      this.reading = false;
-      if (this.rereadQueued) {
-        this.rereadQueued = false;
-        void this.onChange();
-      }
-    }
+    });
   }
 
   /** Read bytes appended since the last offset; parse complete lines.
