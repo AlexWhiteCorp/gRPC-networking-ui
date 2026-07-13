@@ -1,8 +1,8 @@
 node_modules/
 dist/
 out/
-build/
 release/
+# Note: build/ is electron-builder's resources dir (app icons) — keep it tracked.
 
 # TypeScript incremental build info (from composite typecheck)
 *.tsbuildinfo

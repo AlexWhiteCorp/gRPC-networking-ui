@@ -9,6 +9,9 @@ directories:
 files:
   - out/**/*
   - package.json
+  # Vite bundles all runtime deps (react, json5, …) into out/, so the packaged
+  # node_modules would be dead weight — exclude it.
+  - '!node_modules/**'
 
 # Ship the sample log alongside the app (used by the "load sample" path).
 extraResources:
@@ -28,10 +31,10 @@ nsis:
   allowToChangeInstallationDirectory: true
 
 mac:
+  icon: build/icon.icns
   target:
     - dmg
   category: public.app-category.developer-tools
-  # icon: build/icon.icns  # add a .icns here to customize
   # Build an unsigned .dmg locally (no Apple Developer certificate required).
   identity: null
 

@@ -1,8 +1,13 @@
-import { app, BrowserWindow, ipcMain, session } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeImage, session } from 'electron';
 import { join } from 'node:path';
 import { LogSource } from './logSource';
 
 const isDev = !app.isPackaged;
+
+// In dev the app runs from the stock Electron binary, so the taskbar/dock shows
+// Electron's default logo. Packaged builds get their icon from electron-builder
+// (build/icon.ico/.icns), so this is only needed — and only resolvable — in dev.
+const devIconPath = join(app.getAppPath(), 'build', 'icon.png');
 
 // A restrictive Content-Security-Policy for the packaged app. It is intentionally
 // not applied in dev, where Vite's HMR relies on inline scripts.
@@ -20,6 +25,9 @@ function createWindow(): void {
     minHeight: 200,
     show: false,
     backgroundColor: '#1e1e1e',
+    // Window/taskbar icon for dev on Windows/Linux (macOS ignores this and uses
+    // the dock icon set below).
+    ...(isDev ? { icon: devIconPath } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -74,6 +82,13 @@ app.whenReady().then(() => {
         },
       });
     });
+  }
+
+  // macOS ignores the window icon; set the dock icon in dev so it isn't the
+  // stock Electron logo. (Packaged mac apps get it from the .app bundle.)
+  if (isDev && process.platform === 'darwin' && app.dock) {
+    const img = nativeImage.createFromPath(devIconPath);
+    if (!img.isEmpty()) app.dock.setIcon(img);
   }
 
   createWindow();
