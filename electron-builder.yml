@@ -1,0 +1,39 @@
+appId: com.grpcnetworkingui.app
+productName: gRPC Networking UI
+
+# electron-vite already bundles main/preload/renderer into out/, so we only ship
+# that plus package.json (runtime deps like json5/react are bundled in).
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+
+# Ship the sample log alongside the app (used by the "load sample" path).
+extraResources:
+  - from: sample-logs
+    to: sample-logs
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+
+mac:
+  target:
+    - dmg
+  category: public.app-category.developer-tools
+  # icon: build/icon.icns  # add a .icns here to customize
+  # Build an unsigned .dmg locally (no Apple Developer certificate required).
+  identity: null
+
+dmg:
+  title: ${productName}

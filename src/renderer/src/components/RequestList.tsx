@@ -13,7 +13,9 @@ export function RequestList({ calls, selectedId, onSelect }: RequestListProps): 
     return (
       <div className="list-empty">
         <p>No gRPC calls to show.</p>
-        <p className="list-empty-hint">Adjust the filters, or the list has been cleared.</p>
+        <p className="list-empty-hint">
+          Open a log file to start tailing, or adjust the filters.
+        </p>
       </div>
     );
   }

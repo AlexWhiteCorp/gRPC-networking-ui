@@ -2,6 +2,7 @@ node_modules/
 dist/
 out/
 build/
+release/
 
 # TypeScript incremental build info (from composite typecheck)
 *.tsbuildinfo
@@ -18,10 +19,7 @@ npm-debug.log*
 .env.local
 
 # IDE (keep .idea module config, ignore workspace state)
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/usage.statistics.xml
-.idea/shelf/
+.idea/**
 .tmp/
 temp/
 tmp/

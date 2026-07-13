@@ -18,7 +18,16 @@ npm start           # preview the production build
 npm run typecheck   # tsc --noEmit for BOTH projects (node + web)
 npm run lint        # eslint (flat config in eslint.config.mjs)
 npm run lint:fix    # eslint --fix
+npm run dist:mac    # package a macOS .dmg into release/
+npm run dist:win    # package a Windows .exe (NSIS) into release/
+npm run dist        # both installers
 ```
+
+Packaging uses `electron-builder` (config: `electron-builder.yml`, output:
+`release/`). It is pinned to the 24.x line because 26.x needs Node ≥ 20.19
+(`require(ESM)`); this repo targets Node 20.10. Windows builds on macOS work via a
+Wine binary electron-builder downloads automatically. macOS builds are unsigned
+(`mac.identity: null`).
 
 Always run `npm run typecheck && npm run lint` before considering a change done;
 `npm run build` is the end-to-end check.

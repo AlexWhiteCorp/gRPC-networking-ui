@@ -12,17 +12,30 @@ export function App(): JSX.Element {
   const [filterText, setFilterText] = useState('');
   const [activeTypes, setActiveTypes] = useState<Set<RpcType>>(new Set());
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  // Narrow = not enough room for list + detail side by side. In that case the
+  // detail panel opens as a right-side overlay on top of the list.
+  const [narrow, setNarrow] = useState(false);
 
-  // Subscribe to log snapshots pushed from the main process, and load the
-  // bundled sample once on startup.
+  // Subscribe to log snapshots pushed from the main process. The app starts
+  // empty; use "Open log file…" to pick a file to tail.
+  // (Startup sample load disabled for now — re-enable with
+  //  `void window.api.loadSampleLog();` here.)
   useEffect(() => {
     const unsubscribe = window.api.onLogSnapshot((snapshot) => {
       setCalls(snapshot.calls);
       setSourceLabel(snapshot.sourceLabel);
       if (snapshot.reset) setSelectedId(null);
     });
-    void window.api.loadSampleLog();
     return unsubscribe;
+  }, []);
+
+  // Track whether the window is too narrow to show both panes.
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 720px)');
+    const update = (): void => setNarrow(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
   }, []);
 
   const filtered = useMemo(() => {
@@ -96,9 +109,13 @@ export function App(): JSX.Element {
             onSelect={setSelectedId}
           />
         </div>
-        <div className="pane pane-detail">
-          <DetailPanel call={selected} />
-        </div>
+        {/* Detail is hidden until a request is selected. When there isn't room
+            for both panes, it opens as a right-side overlay on top of the list. */}
+        {selected && (
+          <div className={`pane pane-detail${narrow ? ' pane-detail-overlay' : ''}`}>
+            <DetailPanel call={selected} onClose={() => setSelectedId(null)} />
+          </div>
+        )}
       </div>
     </div>
   );

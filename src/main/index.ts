@@ -16,8 +16,8 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 820,
-    minWidth: 900,
-    minHeight: 600,
+    minWidth: 100,
+    minHeight: 200,
     show: false,
     backgroundColor: '#1e1e1e',
     webPreferences: {
@@ -38,7 +38,9 @@ function createWindow(): void {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
-    if (isDev) {
+    // Open DevTools automatically only when explicitly requested, e.g.
+    // `OPEN_DEVTOOLS=1 npm run dev`. Toggle manually with Cmd/Ctrl+Alt+I.
+    if (isDev && process.env['OPEN_DEVTOOLS'] === '1') {
       mainWindow?.webContents.openDevTools({ mode: 'detach' });
     }
   });

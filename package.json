@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "description": "Desktop UI for exploring and interacting with gRPC networking services",
   "main": "out/main/index.js",
-  "author": "",
-  "license": "MIT",
+  "author": "Alex White",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
@@ -13,7 +12,12 @@
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "icons": "node scripts/generate-icons.cjs",
+    "pack": "electron-vite build && electron-builder --dir",
+    "dist:win": "electron-vite build && electron-builder --win",
+    "dist:mac": "electron-vite build && electron-builder --mac",
+    "dist": "electron-vite build && electron-builder --win --mac"
   },
   "devDependencies": {
     "@eslint/js": "^9.6.0",
@@ -21,6 +25,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",
     "eslint": "^9.6.0",
     "eslint-plugin-react-hooks": "^5.0.0",

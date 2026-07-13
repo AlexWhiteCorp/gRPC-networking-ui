@@ -20,23 +20,35 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'status', label: 'Status' },
 ];
 
-export function DetailPanel({ call }: { call: GrpcCall | null }): JSX.Element {
+export function DetailPanel({
+  call,
+  onClose,
+}: {
+  call: GrpcCall | null;
+  onClose?: () => void;
+}): JSX.Element | null {
   const [tab, setTab] = useState<Tab>('metadata');
 
-  if (!call) {
-    return (
-      <div className="detail detail-empty">
-        <p>Select a call to inspect its metadata, messages, timing, and status.</p>
-      </div>
-    );
-  }
+  if (!call) return null;
 
   return (
     <div className="detail">
       <header className="detail-header">
-        <div className="detail-title">
-          <span className="method-service">{call.service}/</span>
-          <span className="method-name">{call.method}</span>
+        <div className="detail-header-top">
+          <div className="detail-title">
+            <span className="method-service">{call.service}/</span>
+            <span className="method-name">{call.method}</span>
+          </div>
+          {onClose && (
+            <button
+              className="detail-close"
+              onClick={onClose}
+              title="Close details"
+              aria-label="Close details"
+            >
+              ✕
+            </button>
+          )}
         </div>
         <div className="detail-subtitle">
           <StatusBadge status={call.status} />

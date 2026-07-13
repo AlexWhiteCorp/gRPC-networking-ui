@@ -158,23 +158,50 @@ body {
 
 /* ---- Workspace split ---- */
 .workspace {
+  position: relative;
   flex: 1;
   display: flex;
   min-height: 0;
 }
 
 .pane-list {
-  flex: 1 1 58%;
+  flex: 1 1 auto;
   min-width: 0;
-  border-right: 1px solid var(--border);
   overflow: hidden;
 }
 
 .pane-detail {
-  flex: 1 1 42%;
+  flex: 0 0 42%;
   min-width: 320px;
+  border-left: 1px solid var(--border);
   overflow: hidden;
   display: flex;
+}
+
+/* Narrow layout: detail floats over the list from the right. */
+.pane-detail-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  flex: none;
+  min-width: 0;
+  width: min(480px, 100%);
+  z-index: 5;
+  background: var(--bg);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.45);
+  animation: detail-slide-in 0.15s ease-out;
+}
+
+@keyframes detail-slide-in {
+  from {
+    transform: translateX(12px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* ---- Request list ---- */
@@ -320,10 +347,35 @@ body {
   background: var(--bg-elev);
 }
 
+.detail-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .detail-title {
   font-size: 0.9rem;
   margin-bottom: 0.35rem;
   word-break: break-all;
+}
+
+.detail-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-dim);
+  cursor: pointer;
+  width: 1.5rem;
+  height: 1.5rem;
+  line-height: 1;
+  font-size: 0.8rem;
+}
+
+.detail-close:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
 
 .detail-subtitle {

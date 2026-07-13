@@ -42,6 +42,25 @@ npm run dev   # launch the app with hot-reload
 | `npm start`         | Preview the production build                        |
 | `npm run typecheck` | Type-check both the node and web projects           |
 | `npm run lint`      | Run ESLint                                           |
+| `npm run dist:mac`  | Build a macOS `.dmg` into `release/`                 |
+| `npm run dist:win`  | Build a Windows `.exe` (NSIS installer) into `release/` |
+| `npm run dist`      | Build both installers                                |
+| `npm run pack`      | Package an unpacked app dir (fast sanity check)      |
+
+## Packaging
+
+Uses [`electron-builder`](https://www.electron.build/) (config in
+`electron-builder.yml`); installers are written to `release/`.
+
+- **macOS** — `npm run dist:mac` produces an unsigned `.dmg` (arch matches the
+  host; Apple Silicon → arm64). No Apple Developer certificate needed for local
+  builds (`mac.identity: null`).
+- **Windows** — `npm run dist:win` produces an x64 NSIS `.exe`. On macOS this
+  works out of the box: electron-builder downloads a bundled Wine to run the NSIS
+  compiler. (Building on Windows or CI also works.)
+- No app icons are set yet, so the default Electron icon is used. Drop
+  `build/icon.icns` / `build/icon.ico` and uncomment the `icon:` lines in
+  `electron-builder.yml` to customize.
 
 ## Project structure
 
